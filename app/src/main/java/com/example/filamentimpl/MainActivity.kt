@@ -156,8 +156,7 @@ class MainActivity : AppCompatActivity() {
 
             // Calculate FPS
             frameCount++
-            val currentTime = System.nanoTime()
-            val elapsedNanos = currentTime - lastFpsUpdateTime
+            val elapsedNanos = frameTimeNanos - lastFpsUpdateTime
 
             // Update FPS every second
             if (elapsedNanos > 1_000_000_000) {
@@ -168,7 +167,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Reset counters
                 frameCount = 0
-                lastFpsUpdateTime = currentTime
+                lastFpsUpdateTime = frameTimeNanos
             }
 
             modelViewer.animator?.apply {
