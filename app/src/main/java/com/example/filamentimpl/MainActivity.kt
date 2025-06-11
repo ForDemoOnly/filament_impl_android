@@ -1,26 +1,17 @@
 package com.example.filamentimpl
 
 import android.annotation.SuppressLint
-import android.nfc.Tag
 import android.os.Bundle
-import android.util.Log
 import android.view.Choreographer
 import android.view.SurfaceView
 import android.view.WindowManager
-import androidx.activity.enableEdgeToEdge
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.google.android.filament.EntityManager
-import com.google.android.filament.Fence
-import com.google.android.filament.LightManager
-import com.google.android.filament.Material
 import com.google.android.filament.Skybox
 import com.google.android.filament.View
 import com.google.android.filament.utils.AutomationEngine
 import com.google.android.filament.utils.KTX1Loader
 import com.google.android.filament.utils.ModelViewer
-import com.google.android.filament.utils.RemoteServer
 import com.google.android.filament.utils.Utils
 import java.nio.ByteBuffer
 
@@ -31,13 +22,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private lateinit var fpsTextView: TextView
     private lateinit var surfaceView: SurfaceView
     private lateinit var modelViewer: ModelViewer
     private lateinit var choreographer: Choreographer
     private val automation = AutomationEngine()
     private val viewerContent = AutomationEngine.ViewerContent()
-    private var loadStartTime = 0L
-    private var loadStartFence: Fence? = null
     private val frameScheduler = FrameCallback()
 
     @SuppressLint("ClickableViewAccessibility")
@@ -45,6 +35,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        fpsTextView = findViewById(R.id.fpsTxt)
         surfaceView = findViewById(R.id.filamentSurface)
         choreographer = Choreographer.getInstance()
 
@@ -59,7 +50,6 @@ class MainActivity : AppCompatActivity() {
 
 
         loadGlb("Fox")
-        modelViewer.scene.skybox = Skybox.Builder().build(modelViewer.engine)
 
         createIndirectLight()
 
@@ -82,17 +72,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         // FXAA is pretty cheap and helps a lot
-        view.antiAliasing = View.AntiAliasing.FXAA
+//        view.antiAliasing = View.AntiAliasing.FXAA
 
         // ambient occlusion is the cheapest effect that adds a lot of quality
-        view.ambientOcclusionOptions = view.ambientOcclusionOptions.apply {
-            enabled = true
-        }
+//        view.ambientOcclusionOptions = view.ambientOcclusionOptions.apply {
+//            enabled = true
+//        }
 
         // bloom is pretty expensive but adds a fair amount of realism
-        view.bloomOptions = view.bloomOptions.apply {
-            enabled = true
-        }
+//        view.bloomOptions = view.bloomOptions.apply {
+//            enabled = true
+//        }
     }
 
     override fun onResume() {
@@ -117,18 +107,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadGltf(name: String) {
-        try {
-            val buffer = assets.open("models/${name}.gltf").use { input ->
-                val bytes = ByteArray(input.available())
-                input.read(bytes)
-                ByteBuffer.wrap(bytes)
-            }
-
-            modelViewer.loadModelGltfAsync(buffer) { uri -> readAsset("models/$uri") };
-            updateRootTransform()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        val buffer = readAsset("models/${name}.gltf")
+        modelViewer.loadModelGltf(buffer) { uri -> readAsset("models/$uri") }
+        modelViewer.transformToUnitCube()
     }
 
     private fun loadEnvironment(ibl: String) {
@@ -154,14 +135,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun createIndirectLight() {
-        val scene = modelViewer.scene
-        val light = EntityManager.get().create()
-        LightManager.Builder(LightManager.Type.DIRECTIONAL)
-            .color(1.0f, 1.0f, 1.0f)
-            .intensity(100000.0f)
-            .direction(0.0f, -1.0f, 0.0f)
-            .build(modelViewer.engine, light)
-        scene.addEntity(light)
+        modelViewer.scene.skybox = Skybox.Builder().build(modelViewer.engine)
     }
 
     private fun updateRootTransform() {
@@ -174,9 +148,28 @@ class MainActivity : AppCompatActivity() {
 
     inner class FrameCallback : Choreographer.FrameCallback {
         private val startTime = System.nanoTime()
+        private var frameCount = 0
+        private var lastFpsUpdateTime = startTime
         override fun doFrame(frameTimeNanos: Long) {
             val seconds = (frameTimeNanos - startTime).toDouble() / 1_000_000_000
             choreographer.postFrameCallback(this)
+
+            // Calculate FPS
+            frameCount++
+            val currentTime = System.nanoTime()
+            val elapsedNanos = currentTime - lastFpsUpdateTime
+
+            // Update FPS every second
+            if (elapsedNanos > 1_000_000_000) {
+                val fps = (frameCount * 1e9) / elapsedNanos
+                fpsTextView.post {
+                    fpsTextView.text = String.format("FPS: %.1f", fps)
+                }
+
+                // Reset counters
+                frameCount = 0
+                lastFpsUpdateTime = currentTime
+            }
 
             modelViewer.animator?.apply {
                 if (animationCount > 0) {
@@ -185,6 +178,9 @@ class MainActivity : AppCompatActivity() {
                 updateBoneMatrices()
             }
 
+            modelViewer.asset?.apply {
+
+            }
             modelViewer.render(frameTimeNanos)
         }
     }
