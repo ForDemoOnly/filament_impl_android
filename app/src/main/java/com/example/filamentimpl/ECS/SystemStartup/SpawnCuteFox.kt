@@ -19,7 +19,7 @@ class SpawnCuteFox(
         val entity: Int = entityManager.create();
 
         modelLoaderHelper.loadGltf("Fox")
-        modelLoaderHelper.loadEnvironment("default_env")
+//        modelLoaderHelper.loadEnvironment("default_env")
 //        RenderableManager.Builder(1).boundingBox(Box(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f))
 //            .geometry(0, RenderableManager.PrimitiveType.TRIANGLES, vb, ib)
 //            .material(0, material)
