@@ -21,6 +21,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="40dp"
         android:text="N/A FPS"
+        android:textColor="#ff0000"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

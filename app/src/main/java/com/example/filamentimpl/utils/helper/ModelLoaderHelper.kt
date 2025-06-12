@@ -1,12 +1,15 @@
 package com.example.filamentimpl.utils.helper
 
 import android.content.res.AssetManager
+import com.google.android.filament.Entity
+import com.google.android.filament.gltfio.AssetLoader
 import com.google.android.filament.utils.AutomationEngine
 import com.google.android.filament.utils.KTX1Loader
 import com.google.android.filament.utils.ModelViewer
 import java.nio.ByteBuffer
 
 class ModelLoaderHelper(
+    private val assetLoader: AssetLoader,
     private val assetManager: AssetManager,
     private val modelViewer: ModelViewer,
     private val automation: AutomationEngine
