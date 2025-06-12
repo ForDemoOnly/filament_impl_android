@@ -7,14 +7,13 @@ import android.view.SurfaceView
 import android.view.WindowManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.filamentimpl.ECS.Systems.TransformSystem
+import com.example.filamentimpl.utils.helper.GraphicQualityHelper
 import com.example.filamentimpl.utils.helper.ModelLoaderHelper
-import com.google.android.filament.Skybox
 import com.google.android.filament.View
 import com.google.android.filament.utils.AutomationEngine
-import com.google.android.filament.utils.KTX1Loader
 import com.google.android.filament.utils.ModelViewer
 import com.google.android.filament.utils.Utils
-import java.nio.ByteBuffer
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -31,6 +30,10 @@ class MainActivity : AppCompatActivity() {
     private val viewerContent = AutomationEngine.ViewerContent()
     private val frameScheduler = FrameCallback()
     private lateinit var modelLoaderHelper: ModelLoaderHelper
+    private lateinit var graphicQualityHelper: GraphicQualityHelper
+
+    // ECS - System
+    private lateinit var transformSystem: TransformSystem;
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,42 +53,20 @@ class MainActivity : AppCompatActivity() {
         viewerContent.scene = modelViewer.scene
         viewerContent.renderer = modelViewer.renderer
 
-
         modelLoaderHelper = ModelLoaderHelper(assets, modelViewer, automation)
+        graphicQualityHelper = GraphicQualityHelper(modelViewer.view)
+
+        // ECS - System - Initialize
+        transformSystem = TransformSystem(modelViewer.engine.transformManager)
 
         modelLoaderHelper.loadGltf("Fox")
         modelLoaderHelper.loadEnvironment("default_env")
 
-        val view = modelViewer.view
+        graphicQualityHelper.setRenderQuality(View.QualityLevel.MEDIUM)
 
-        // on mobile, better use lower quality color buffer
-        view.renderQuality = view.renderQuality.apply {
-            hdrColorBuffer = View.QualityLevel.MEDIUM
-        }
+        graphicQualityHelper.dynamicResolutionOptions(View.QualityLevel.MEDIUM)
 
-        // dynamic resolution often helps a lot
-        view.dynamicResolutionOptions = view.dynamicResolutionOptions.apply {
-            enabled = true
-            quality = View.QualityLevel.MEDIUM
-        }
-
-        // MSAA is needed with dynamic resolution MEDIUM
-        view.multiSampleAntiAliasingOptions = view.multiSampleAntiAliasingOptions.apply {
-            enabled = true
-        }
-
-        // FXAA is pretty cheap and helps a lot
-        //        view.antiAliasing = View.AntiAliasing.FXAA
-
-        // ambient occlusion is the cheapest effect that adds a lot of quality
-        //        view.ambientOcclusionOptions = view.ambientOcclusionOptions.apply {
-        //            enabled = true
-        //        }
-
-        // bloom is pretty expensive but adds a fair amount of realism
-        //        view.bloomOptions = view.bloomOptions.apply {
-        //            enabled = true
-        //        }
+        graphicQualityHelper.multiSampleAntiAliasingOptions(true)
     }
 
     override fun onResume() {
@@ -108,7 +89,10 @@ class MainActivity : AppCompatActivity() {
         private var frameCount = 0
         private var lastFpsUpdateTime = startTime
         override fun doFrame(frameTimeNanos: Long) {
-            val seconds = (frameTimeNanos - startTime).toDouble() / 1_000_000_000
+            val deltaTime = (frameTimeNanos - startTime).toDouble() / 1_000_000_000
+
+            transformSystem.update(deltaTime.toFloat())
+
             choreographer.postFrameCallback(this)
 
             // Calculate FPS
@@ -128,7 +112,7 @@ class MainActivity : AppCompatActivity() {
 
             modelViewer.animator?.apply {
                 if (animationCount > 0) {
-                    applyAnimation(0, seconds.toFloat())
+                    applyAnimation(0, deltaTime.toFloat())
                 }
                 updateBoneMatrices()
             }
