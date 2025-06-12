@@ -8,7 +8,6 @@ import com.google.android.filament.utils.ModelViewer
 import java.nio.ByteBuffer
 
 class ModelLoader(
-    private val assetLoader: AssetLoader,
     private val assetManager: AssetManager,
     private val modelViewer: ModelViewer,
     private val automation: AutomationEngine
