@@ -1,10 +1,10 @@
 package com.example.filamentimpl.utils.loader
 
 import android.content.res.AssetManager
-import com.google.android.filament.gltfio.AssetLoader
-import com.google.android.filament.utils.AutomationEngine
-import com.google.android.filament.utils.KTX1Loader
-import com.google.android.filament.utils.ModelViewer
+import com.google.android.filament.EntityManager
+import com.google.android.filament.LightManager
+import com.google.android.filament.gltfio.*
+import com.google.android.filament.utils.*
 import java.nio.ByteBuffer
 
 class ModelLoader(
@@ -32,7 +32,7 @@ class ModelLoader(
         }
     }
 
-    fun loadEnvironment(ibl: String) {
+    fun loadEnvironment(ibl: String): Int {
         // Create the indirect light source and add it to the scene.
         var buffer = readAsset("envs/$ibl/${ibl}_ibl.ktx")
         KTX1Loader.createIndirectLight(modelViewer.engine, buffer).apply {
@@ -45,6 +45,18 @@ class ModelLoader(
         KTX1Loader.createSkybox(modelViewer.engine, buffer).apply {
             modelViewer.scene.skybox = this
         }
+
+        val sunlight = EntityManager.get().create()
+
+        // Add directional light
+        LightManager.Builder(LightManager.Type.DIRECTIONAL)
+            .color(1.0f, 0.98f, 0.95f)
+            .intensity(110_000f)
+            .direction(0.28f, -0.6f, -0.76f)
+            .build(modelViewer.engine, sunlight)
+
+        modelViewer.scene.addEntity(sunlight)
+        return sunlight
     }
 
     private fun readAsset(assetName: String): ByteBuffer {

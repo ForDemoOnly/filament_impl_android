@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.filamentimpl.utils.helper.GraphicQualityHelper
 import com.example.filamentimpl.utils.loader.ModelLoader
 import com.google.android.filament.*
-import com.google.android.filament.android.UiHelper
+import com.google.android.filament.android.*
 import com.google.android.filament.gltfio.*
 import com.google.android.filament.utils.*
 
@@ -28,12 +28,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var surfaceView: SurfaceView
     private lateinit var modelViewer: ModelViewer
     private lateinit var choreographer: Choreographer
-    private lateinit var assetLoader: AssetLoader
+    private lateinit var filamentAsset: FilamentAsset
     private lateinit var graphicQualityHelper: GraphicQualityHelper
     private lateinit var modelLoaderHelper: ModelLoader
     private lateinit var uiHelper: UiHelper
     private val automation = AutomationEngine()
     private val frameScheduler = FrameCallback()
+
+    @Entity
+    private var foxEntityID = 0
+
+    @Entity var sunlightEntityID = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,8 +63,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         modelLoaderHelper = ModelLoader(assets, modelViewer, automation)
-        modelLoaderHelper.loadGltf("Fox")
-        modelLoaderHelper.loadEnvironment("default_env")
+
+        foxEntityID = EntityManager.get().create()
+
+//        RenderableManager.Builder(1).boundingBox(Box(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f)).material(0, )
+//        modelLoaderHelper.loadGltf("Fox")
+        sunlightEntityID = modelLoaderHelper.loadEnvironment("default_env")
     }
 
     override fun onResume() {
