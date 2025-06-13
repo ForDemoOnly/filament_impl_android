@@ -8,9 +8,18 @@
     tools:context=".MainActivity">
 
     <SurfaceView
+        android:id="@+id/googleMapSurface"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="16dp"
+        />
+
+    <SurfaceView
         android:id="@+id/filamentSurface"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@android:color/transparent"
         tools:layout_editor_absoluteX="16dp"
         tools:layout_editor_absoluteY="16dp" />
 
@@ -20,7 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="40dp"
-        android:text="N/A FPS"
+        android:text="@string/fps_n_a"
         android:textColor="#ff0000"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

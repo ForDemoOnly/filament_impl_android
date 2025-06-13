@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FilamentImpl</string>
+    <string name="fps_n_a">FPS: N/A</string>
 </resources>

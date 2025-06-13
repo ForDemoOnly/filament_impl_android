@@ -1,6 +1,7 @@
 package com.example.filamentimpl
 
 import android.annotation.SuppressLint
+import android.graphics.PixelFormat
 import android.os.Bundle
 import android.view.Choreographer
 import android.view.SurfaceView
@@ -25,7 +26,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var fpsTextView: TextView
-    private lateinit var surfaceView: SurfaceView
+    private lateinit var googleMapSurface: SurfaceView
+    private lateinit var filamentSurface: SurfaceView
     private lateinit var modelViewer: ModelViewer
     private lateinit var choreographer: Choreographer
     private lateinit var filamentAsset: FilamentAsset
@@ -45,7 +47,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         fpsTextView = findViewById(R.id.fpsTxt)
-        surfaceView = findViewById(R.id.filamentSurface)
+        googleMapSurface = findViewById(R.id.googleMapSurface)
+        filamentSurface = findViewById(R.id.filamentSurface)
         choreographer = Choreographer.getInstance()
 
         setupSurfaceView()
@@ -68,7 +71,7 @@ class MainActivity : AppCompatActivity() {
 
 //        RenderableManager.Builder(1).boundingBox(Box(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f)).material(0, )
         modelLoaderHelper.loadGltf("Fox")
-        sunlightEntityID = modelLoaderHelper.loadEnvironment("default_env")
+//        sunlightEntityID = modelLoaderHelper.loadEnvironment("default_env")
     }
 
     override fun onResume() {
@@ -87,28 +90,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSurfaceView() {
+        filamentSurface.setZOrderOnTop(true)
+        filamentSurface.holder.setFormat(PixelFormat.TRANSLUCENT)
         uiHelper = UiHelper(UiHelper.ContextErrorPolicy.DONT_CHECK)
 
         // NOTE: To choose a specific rendering resolution, add the following line:
         // uiHelper.setDesiredSize(1280, 720)
 
-        uiHelper.attachTo(surfaceView)
+        uiHelper.attachTo(filamentSurface)
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupFilament() {
         val engine = Engine.create()
-        modelViewer = ModelViewer(surfaceView, engine)
-        surfaceView.setOnTouchListener(modelViewer)
+        modelViewer = ModelViewer(filamentSurface, engine)
+        filamentSurface.setOnTouchListener(modelViewer)
     }
 
     private fun setupView() {
+        modelViewer.view.blendMode = View.BlendMode.TRANSLUCENT
+
+        modelViewer.renderer.clearOptions = modelViewer.renderer.clearOptions.apply {
+            clear = false
+        }
     }
 
     inner class FrameCallback : Choreographer.FrameCallback {
         private val startTime = System.nanoTime()
         private var frameCount = 0
         private var lastFpsUpdateTime = startTime
+        @SuppressLint("DefaultLocale")
         override fun doFrame(frameTimeNanos: Long) {
             val deltaTime = (frameTimeNanos - startTime).toDouble() / 1_000_000_000
             choreographer.postFrameCallback(this)
@@ -135,9 +146,6 @@ class MainActivity : AppCompatActivity() {
                 updateBoneMatrices()
             }
 
-            modelViewer.asset?.apply {
-
-            }
             modelViewer.render(frameTimeNanos)
         }
     }
