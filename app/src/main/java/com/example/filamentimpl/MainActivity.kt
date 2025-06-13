@@ -26,7 +26,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var fpsTextView: TextView
-    private lateinit var googleMapSurface: SurfaceView
     private lateinit var filamentSurface: SurfaceView
     private lateinit var modelViewer: ModelViewer
     private lateinit var choreographer: Choreographer
@@ -47,7 +46,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         fpsTextView = findViewById(R.id.fpsTxt)
-        googleMapSurface = findViewById(R.id.googleMapSurface)
         filamentSurface = findViewById(R.id.filamentSurface)
         choreographer = Choreographer.getInstance()
 
@@ -71,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
 //        RenderableManager.Builder(1).boundingBox(Box(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f)).material(0, )
         modelLoaderHelper.loadGltf("Fox")
-//        sunlightEntityID = modelLoaderHelper.loadEnvironment("default_env")
+        sunlightEntityID = modelLoaderHelper.loadEnvironment("default_env")
     }
 
     override fun onResume() {
