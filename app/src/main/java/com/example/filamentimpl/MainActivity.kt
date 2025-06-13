@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         foxEntityID = EntityManager.get().create()
 
 //        RenderableManager.Builder(1).boundingBox(Box(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f)).material(0, )
-//        modelLoaderHelper.loadGltf("Fox")
+        modelLoaderHelper.loadGltf("Fox")
         sunlightEntityID = modelLoaderHelper.loadEnvironment("default_env")
     }
 
